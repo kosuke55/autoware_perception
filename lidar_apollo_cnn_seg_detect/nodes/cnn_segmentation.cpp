@@ -140,6 +140,7 @@ bool CNNSegmentation::segment(const pcl::PointCloud<pcl::PointXYZI>::Ptr &pc_ptr
     return true;
   }
 
+  // get 8 raw feature data if pointcloud.
   feature_generator_->generate(pc_ptr);
 
 // network forward process
@@ -160,7 +161,7 @@ bool CNNSegmentation::segment(const pcl::PointCloud<pcl::PointXYZI>::Ptr &pc_ptr
                       valid_idx, objectness_thresh,
                       use_all_grids_for_clustering);
   cluster2d_->filter(*confidence_pt_blob_, *height_pt_blob_);
-  cluster2d_->classify(*class_pt_blob_;)
+  cluster2d_->classify(*class_pt_blob_);
   float confidence_thresh = score_threshold_;
   float height_thresh = 0.5;
   int min_pts_num = 3;
@@ -171,7 +172,9 @@ bool CNNSegmentation::segment(const pcl::PointCloud<pcl::PointXYZI>::Ptr &pc_ptr
 
 void CNNSegmentation::test_run()
 {
-  std::string in_pcd_file = "uscar_12_1470770225_1470770492_1349.pcd";
+  ros::NodeHandle nh("~");
+  std::string in_pcd_file;
+  nh.getParam("sample_pcd", in_pcd_file);
 
   pcl::PointCloud<pcl::PointXYZI>::Ptr in_pc_ptr(new pcl::PointCloud<pcl::PointXYZI>);
   pcl::io::loadPCDFile(in_pcd_file, *in_pc_ptr);

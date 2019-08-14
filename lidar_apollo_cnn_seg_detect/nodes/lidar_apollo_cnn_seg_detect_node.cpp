@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "lidar_apollo_cnn_seg_detect");
   CNNSegmentation node;
-  node.run();
+  node.test_run();
   ros::spin();
 
   return 0;

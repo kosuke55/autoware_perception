@@ -16,6 +16,7 @@
 
 #include "feature_generator.h"
 
+// feature_blob_.get() = "data" will be used as out_blob
 bool FeatureGenerator::init(caffe::Blob<float>* out_blob)
 {
   out_blob_ = out_blob;
@@ -60,11 +61,14 @@ bool FeatureGenerator::init(caffe::Blob<float>* out_blob)
     for (int col = 0; col < width_; ++col) {
       int idx = row * width_ + col;
       // * row <-> x, column <-> y
+      // retutn the distance from my car to center of the grid.
+      // Pc means point cloud = real world scale. so transform pixel scale to real world scale
       float center_x = Pixel2Pc(row, height_, range_);
       float center_y = Pixel2Pc(col, width_, range_);
       constexpr double K_CV_PI = 3.1415926535897932384626433832795;
+      // normaliztion. -0.5~0.5
       direction_data[idx] =
-          static_cast<float>(std::atan2(center_y, center_x) / (2.0 * K_CV_PI));
+        static_cast<float>(std::atan2(center_y, center_x) / (2.0 * K_CV_PI));
       distance_data[idx] =
           static_cast<float>(std::hypot(center_x, center_y) / 60.0 - 0.5);
     }
@@ -111,6 +115,7 @@ void FeatureGenerator::generate(
       map_idx_[i] = -1;
       continue;
     }
+    // project point cloud to 2d map. clac in which grid point is.
     // * the coordinates of x and y are exchanged here
     // (row <-> x, column <-> y)
     int pos_x = F2I(points[i].y, range_, inv_res_x);  // col
@@ -126,7 +131,7 @@ void FeatureGenerator::generate(
     float pi = points[i].intensity / 255.0;
     if (max_height_data_[idx] < pz) {
       max_height_data_[idx] = pz;
-      top_intensity_data_[idx] = pi;
+      top_intensity_data_[idx] = pi; // not I_max but I of z_max ?
     }
     mean_height_data_[idx] += static_cast<float>(pz);
     mean_intensity_data_[idx] += static_cast<float>(pi);
