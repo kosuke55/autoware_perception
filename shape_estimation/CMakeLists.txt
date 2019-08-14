@@ -3,14 +3,15 @@ project(shape_estimation)
 
 add_compile_options(-std=c++11 -O3)
 
-find_package(catkin REQUIRED
-             COMPONENTS autoware_msgs
-                        pcl_ros
-                        roscpp
-                        tf2
-                        tf2_geometry_msgs
-                        rostest
-                        rosunit)
+find_package(catkin REQUIRED COMPONENTS
+        autoware_msgs
+        vector_map_msgs
+        pcl_ros
+        roscpp
+        tf2
+        tf2_geometry_msgs
+        rostest
+        rosunit)
 
 find_package(PCL REQUIRED)
 find_package(OpenCV REQUIRED)

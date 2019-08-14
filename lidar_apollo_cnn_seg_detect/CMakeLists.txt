@@ -39,15 +39,17 @@ IF (CUDA_FOUND)
     endif ()
 ENDIF ()
 ###CAFFE
-set(CAFFE_PATH "$ENV{HOME}/caffe/distribute")
+# set(CAFFE_PATH "$ENV{HOME}/caffe/distribute")
+set(CAFFE_PATH "$ENV{HOME}/caffe/")
 
 if (EXISTS "${CAFFE_PATH}")
-
+  message("${CAFFE_PATH}")
     include_directories(
             include
             ${catkin_INCLUDE_DIRS}
             ${OpenCV_INCLUDE_DIRS}
             ${CAFFE_PATH}/include
+            ${CAFFE_PATH}/.build_release/proto
     )
 
     add_executable(lidar_apollo_cnn_seg_detect
@@ -62,7 +64,7 @@ if (EXISTS "${CAFFE_PATH}")
             ${CUDA_LIBRARIES}
             ${CUDA_CUBLAS_LIBRARIES}
             ${CUDA_curand_LIBRARY}
-            ${CAFFE_PATH}/lib/libcaffe.so
+            ${CAFFE_PATH}/.build_release/lib/libcaffe.so
             glog
             )
     add_dependencies(lidar_apollo_cnn_seg_detect

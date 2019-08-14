@@ -108,8 +108,8 @@ private:
   void pointsCallback(const sensor_msgs::PointCloud2 &msg);
 
   void pubColoredPoints(const autoware_msgs::DetectedObjectArray &objects);
-  
-  void convertDetected2Dynamic(const autoware_msgs::DetectedObjectArray &objects, 
+
+  void convertDetected2Dynamic(const autoware_msgs::DetectedObjectArray &objects,
                                      autoware_msgs::DynamicObjectWithFeatureArray &d_objects);
 
 };

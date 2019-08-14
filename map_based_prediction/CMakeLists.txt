@@ -5,6 +5,7 @@ add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
         autoware_msgs
+        vector_map_msgs
         pcl_ros
         roscpp
         tf2

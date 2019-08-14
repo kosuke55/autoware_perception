@@ -160,7 +160,7 @@ bool CNNSegmentation::segment(const pcl::PointCloud<pcl::PointXYZI>::Ptr &pc_ptr
                       valid_idx, objectness_thresh,
                       use_all_grids_for_clustering);
   cluster2d_->filter(*confidence_pt_blob_, *height_pt_blob_);
-  cluster2d_->classify(*class_pt_blob_);
+  cluster2d_->classify(*class_pt_blob_;)
   float confidence_thresh = score_threshold_;
   float height_thresh = 0.5;
   int min_pts_num = 3;
@@ -217,7 +217,7 @@ void CNNSegmentation::pointsCallback(const sensor_msgs::PointCloud2 &msg)
   autoware_msgs::DetectedObjectArray objects;
   objects.header = message_header_;
   segment(in_pc_ptr, valid_idx, objects);
-  
+
   autoware_msgs::DynamicObjectWithFeatureArray d_objects;
   convertDetected2Dynamic(objects, d_objects);
 
