@@ -36,12 +36,15 @@ void Cluster2D::traverse(Node *x)
 {
     std::vector<Node *> p;
     p.clear();
+
+    // Cross until you reach center_node
     while (x->traversed == 0)
     {
         p.push_back(x);
         x->traversed = 2;
         x = x->center_node;
     }
+    // x is center_node. Set is_center to true for all crossed nodes including x.
     if (x->traversed == 2)
     {
         for (int i = static_cast<int>(p.size()) - 1; i >= 0 && p[i] != x; i--)
@@ -50,6 +53,7 @@ void Cluster2D::traverse(Node *x)
         }
         x->is_center = true;
     }
+    // Set all the parents of the traversed nodes to x
     for (size_t i = 0; i < p.size(); i++)
     {
         Node *y = p[i];
@@ -65,6 +69,7 @@ void Cluster2D::cluster(const caffe::Blob<float> &category_pt_blob,
                         float objectness_thresh, bool use_all_grids_for_clustering)
 {
     const float *category_pt_data = category_pt_blob.cpu_data();
+
     const float *instance_pt_x_data = instance_pt_blob.cpu_data();
     const float *instance_pt_y_data =
             instance_pt_blob.cpu_data() + instance_pt_blob.offset(0, 1);
@@ -99,16 +104,20 @@ void Cluster2D::cluster(const caffe::Blob<float> &category_pt_blob,
     }
 
     // construct graph with center offset prediction and objectness
+
     for (int row = 0; row < rows_; ++row)
     {
         for (int col = 0; col < cols_; ++col)
         {
             int grid = RowCol2Grid(row, col);
             Node *node = &nodes[row][col];
+            // DisjoinyMakeSet is x->parent = x; x->node_rank = 0; so x's parent is x.
             DisjointSetMakeSet(node);
             node->is_object =
                     (use_all_grids_for_clustering || nodes[row][col].point_num > 0) &&
                     (*(category_pt_data + grid) >= objectness_thresh);
+            // std::cout << "category_pt_data " << grid<<
+            //   "    " <<*(category_pt_data + grid) << std::endl;
             int center_row = std::round(row + instance_pt_x_data[grid] * scale_);
             int center_col = std::round(col + instance_pt_y_data[grid] * scale_);
             center_row = std::min(std::max(center_row, 0), rows_ - 1);
@@ -129,6 +138,8 @@ void Cluster2D::cluster(const caffe::Blob<float> &category_pt_blob,
             }
         }
     }
+
+    // If there is a node with is_center somewhere in the four directions, connect the nodes
     for (int row = 0; row < rows_; ++row)
     {
         for (int col = 0; col < cols_; ++col)
@@ -147,6 +158,7 @@ void Cluster2D::cluster(const caffe::Blob<float> &category_pt_blob,
                         Node *node2 = &nodes[row2][col2];
                         if (node2->is_center)
                         {
+                          // Same if root is different
                             DisjointSetUnion(node, node2);
                         }
                     }

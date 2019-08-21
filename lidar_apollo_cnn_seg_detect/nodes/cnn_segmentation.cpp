@@ -81,12 +81,13 @@ bool CNNSegmentation::init()
   caffe_net_.reset(new caffe::Net<float>(proto_file, caffe::TEST));
   caffe_net_->CopyTrainedLayersFrom(weight_file);
 
-
+  // center
   std::string instance_pt_blob_name = "instance_pt";
   instance_pt_blob_ = caffe_net_->blob_by_name(instance_pt_blob_name);
   CHECK(instance_pt_blob_ != nullptr) << "`" << instance_pt_blob_name
                                       << "` layer required";
 
+  // use for calculate node->is_object
   std::string category_pt_blob_name = "category_score";
   category_pt_blob_ = caffe_net_->blob_by_name(category_pt_blob_name);
   CHECK(category_pt_blob_ != nullptr) << "`" << category_pt_blob_name
@@ -154,6 +155,28 @@ bool CNNSegmentation::segment(const pcl::PointCloud<pcl::PointXYZI>::Ptr &pc_ptr
 //    caffe::Caffe::DeviceQuery();
 #endif
 
+  const float *category_pt_data_ = category_pt_blob_->cpu_data();
+  const float *instance_pt_x_data_ = instance_pt_blob_->cpu_data();
+  const float *instance_pt_y_data_ =
+    instance_pt_blob_->cpu_data() + instance_pt_blob_->offset(0, 1);
+  int rows_ = 512;
+  int cols_ = 512;
+  for (int row = 0; row < rows_; ++row)
+    {
+      for (int col = 0; col < cols_; ++col)
+           {
+             int grid = row * 512 + col;
+             std::cout << grid << ":c   " << *(category_pt_data_ + grid) << std::endl;
+             std::cout << grid << ":x   " << *(instance_pt_x_data_ + grid) << std::endl;
+             std::cout << grid << ":y   " << *(instance_pt_y_data_ + grid) << std::endl;
+
+        }
+    }
+  // const float *instance_pt_x_data_ = *instance_pt_blob_.cpu_data();
+  // const float *instance_pt_y_data_ =
+  //           instance_pt_blob.cpu_data() + instance_pt_blob.offset(0, 1);
+  // std::cout << *category_pt_data_ << std::endl;
+
   // clutser points and construct segments/objects
   float objectness_thresh = 0.5;
   bool use_all_grids_for_clustering = true;
@@ -188,7 +211,7 @@ void CNNSegmentation::test_run()
   autoware_msgs::DetectedObjectArray objects;
   init();
   segment(in_pc_ptr, valid_idx, objects);
-
+  // std::cout << objects.objects[0] << std::endl;
 
 }
 

@@ -16,7 +16,7 @@
 
 #include "feature_generator.h"
 
-// feature_blob_.get() = "data" will be used as out_blob
+// feature_blob_.get() (= "data") will be used as out_blob
 bool FeatureGenerator::init(caffe::Blob<float>* out_blob)
 {
   out_blob_ = out_blob;
