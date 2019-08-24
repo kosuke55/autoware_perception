@@ -64,24 +64,26 @@ class Feature_generator():
         inv_res_x = 0.5 * self.width / self.range
         inv_res_y = 0.5 * self.height / self.range
 
-        for i in range(len(points)):
-            if(points[i, 2] <= self.min_height or
-               points[i, 2] <= self.max_height):
+
+        # for i in range(len(points)):
+        for i, point in enumerate(points):
+            if(point[2] <= self.min_height or
+               point[2] <= self.max_height):
                 self.map_idx[i] = -1
             # project point cloud to 2d map. clac in which grid point is.
             # * the coordinates of x and y are exchanged here
             # (row <-> x, column <-> y)
-            pos_x = bcu.F2I(points[i, 0], self.range, inv_res_x)
-            pos_y = bcu.F2I(points[i, 1], self.range, inv_res_y)
+            pos_x = bcu.F2I(point[0], self.range, inv_res_x)
+            pos_y = bcu.F2I(point[1], self.range, inv_res_y)
             if(pos_x >= self.width or pos_x < 0 or
                pos_y >= self.height or pos_y < 0):
                 self.map_idx[i] = -1
                 continue
             self.map_idx[i] = pos_y * self.width + pos_x
             idx = int(self.map_idx[i])
-            pz = points[i, 2]
+            pz = point[2]
             # if use nuscenes divide intensity by 255.
-            pi = points[i, 3] / 255.0
+            pi = point[3] / 255.0
             if(self.feature[idx, self.max_height_data] < pz):
                 self.feature[idx, self.max_height_data] = pz
                 # not I_max but I of z_max ?
