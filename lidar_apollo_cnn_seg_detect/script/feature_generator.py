@@ -7,8 +7,8 @@ import h5py
 class Feature_generator():
     def __init__(self):
         self.range = 60
-        self.width = 5
-        self.height = 5
+        self.width = 640
+        self.height = 640
         self.siz = self.width * self.height
         self.min_height = -5.0
         self.max_height = 5.0
