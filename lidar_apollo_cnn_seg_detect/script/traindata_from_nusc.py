@@ -49,6 +49,19 @@ def get_color(category_name: str) -> Tuple[int, int, int]:
     else:
         return 255, 0, 255  # Magenta
 
+def getNearestValue(list, num):
+    """
+    概要: リストからある値に最も近い値を返却する関数
+    @param list: データ配列
+    @param num: 対象値
+    @return 対象値に最も近い値
+    """
+
+    # リスト要素と対象値の差分を計算し最小値のインデックスを取得
+    idx = np.abs(np.asarray(list) - num).argmin()
+    return list[idx]
+
+
 
 def points_in_box2d(box2d: np.ndarray, points: np.ndarray):
     p1 = box2d[0]
@@ -71,7 +84,7 @@ def points_in_box2d(box2d: np.ndarray, points: np.ndarray):
 
 grid_range = 60
 size = 640
-# size = 10
+# size = 100
 gsize = 2 * grid_range / size
 
 channel = 5
@@ -132,18 +145,34 @@ corners = view_points(box.corners(), view, normalize=False)[:2, :]
 box2d = corners.T[[2, 3, 7, 6]]
 plt.scatter(box2d[:, 0], box2d[:, 1], marker='^', s=100)
 
-for i in range(len(grid_x)):
-    grid_center = np.array([grid_x[i] + gsize / 2, grid_y[i] + gsize / 2])
-    print(i)
-    fill_area = np.array([[(grid_center[0] - gsize / 2),
-                           (grid_center[0] + gsize / 2),
-                           (grid_center[0] + gsize / 2),
-                           (grid_center[0] - gsize / 2)],
-                          [(grid_center[1] + gsize / 2),
-                           (grid_center[1] + gsize / 2),
-                           (grid_center[1] - gsize / 2),
-                           (grid_center[1] - gsize / 2)]])
-    if(points_in_box2d(box2d, grid_center)):
-        plt.fill(fill_area[0], fill_area[1], color="r", alpha=0.5)
-plt.show()
+# find search_area
+box2d_left = box2d[:, 0].min()
+box2d_right = box2d[:, 0].max()
+box2d_top = box2d[:, 1].max()
+box2d_bottom = box2d[:, 1].min()
 
+print(ticks)
+grid_centers = (ticks + gsize / 2)[:len(ticks) - 1]
+print(grid_centers)
+
+
+search_area_left_idx = np.abs(grid_centers - box2d_left).argmin() - 1
+search_area_right_idx = np.abs(grid_centers - box2d_right).argmin() + 1
+search_area_bottom_idx = np.abs(grid_centers - box2d_bottom).argmin() - 1
+search_area_top_idx = np.abs(grid_centers - box2d_top).argmin() + 1
+
+for i in range(search_area_left_idx, search_area_right_idx):
+    for j in range(search_area_bottom_idx, search_area_top_idx):
+        grid_center = np.array([grid_centers[i], grid_centers[j]])
+        print(i*len(grid_centers) + j)
+        fill_area = np.array([[(grid_center[0] - gsize / 2),
+                               (grid_center[0] + gsize / 2),
+                               (grid_center[0] + gsize / 2),
+                               (grid_center[0] - gsize / 2)],
+                              [(grid_center[1] + gsize / 2),
+                               (grid_center[1] + gsize / 2),
+                               (grid_center[1] - gsize / 2),
+                               (grid_center[1] - gsize / 2)]])
+        if(points_in_box2d(box2d, grid_center)):
+            plt.fill(fill_area[0], fill_area[1], color="r", alpha=0.5)
+plt.show()
