@@ -73,7 +73,8 @@ grid_range = 60
 size = 640
 # size = 100
 gsize = 2 * grid_range / size
-out_feature = np.zeros((size, size, 5))
+# center -> x, y
+out_feature = np.zeros((size, size, 6))
 print(out_feature.shape)
 
 channel = 5
@@ -106,6 +107,7 @@ axes_limit = grid_range
 colors = np.minimum(1, dists / axes_limit / np.sqrt(2))
 
 _, ax = plt.subplots(1, 1, figsize=(10, 10))
+ax.scatter(points[0, :], points[1, :], c=colors, s=0.2)
 ax.plot(0, 0, 'x', color='black')
 ax.grid(which="major", color="silver")
 ticks = np.arange(-grid_range, grid_range + gsize, gsize)
@@ -113,7 +115,6 @@ ticks = np.arange(-grid_range, grid_range + gsize, gsize)
 grid_x, grid_y = np.meshgrid(ticks, ticks)
 grid_x = grid_x.flatten()
 grid_y = grid_y.flatten()
-
 
 plt.tick_params(labelbottom=False,
                 labelleft=False,
@@ -124,44 +125,64 @@ ax.set_xticks(ticks)
 ax.set_yticks(ticks)
 ax.set_xlim(-grid_range, grid_range)
 ax.set_ylim(-grid_range, grid_range)
+
 for box in boxes:
     c = np.array(get_color(box.name)) / 255.0
     box.render(ax, view=np.eye(4), colors=(c, c, c))
 
-box = boxes[2]
-view=np.eye(4)
-corners = view_points(box.corners(), view, normalize=False)[:2, :]
-box2d = corners.T[[2, 3, 7, 6]]
-plt.scatter(box2d[:, 0], box2d[:, 1], marker='^', s=100)
+# box = boxes[2]
+for box_idx, box in enumerate(boxes):
+    print("box_idx  {}/{}".format(box_idx, len(boxes)))
+    view = np.eye(4)
 
-# find search_area
-box2d_left = box2d[:, 0].min()
-box2d_right = box2d[:, 0].max()
-box2d_top = box2d[:, 1].max()
-box2d_bottom = box2d[:, 1].min()
+    corners3d = view_points(box.corners(), view, normalize=False)
+    corners = corners3d[:2, :]
+    box2d = corners.T[[2, 3, 7, 6]]
+    corners_height = corners3d[2, :]
+    height = corners_height[0] - corners_height[2]
 
-print(ticks)
-grid_centers = (ticks + gsize / 2)[:len(ticks) - 1]
-print(grid_centers)
+    # plt.scatter(box2d[:, 0], box2d[:, 1], marker='^', s=100)
 
-search_area_left_idx = np.abs(grid_centers - box2d_left).argmin() - 1
-search_area_right_idx = np.abs(grid_centers - box2d_right).argmin() + 1
-search_area_bottom_idx = np.abs(grid_centers - box2d_bottom).argmin() - 1
-search_area_top_idx = np.abs(grid_centers - box2d_top).argmin() + 1
+    # find search_area
+    box2d_left = box2d[:, 0].min()
+    box2d_right = box2d[:, 0].max()
+    box2d_top = box2d[:, 1].max()
+    box2d_bottom = box2d[:, 1].min()
 
+    grid_centers = (ticks + gsize / 2)[:len(ticks) - 1]
 
-for i in range(search_area_left_idx, search_area_right_idx):
-    for j in range(search_area_bottom_idx, search_area_top_idx):
-        grid_center = np.array([grid_centers[i], grid_centers[j]])
-        print(i*len(grid_centers) + j)
-        fill_area = np.array([[(grid_center[0] - gsize / 2),
-                               (grid_center[0] + gsize / 2),
-                               (grid_center[0] + gsize / 2),
-                               (grid_center[0] - gsize / 2)],
-                              [(grid_center[1] + gsize / 2),
-                               (grid_center[1] + gsize / 2),
-                               (grid_center[1] - gsize / 2),
-                               (grid_center[1] - gsize / 2)]])
-        if(points_in_box2d(box2d, grid_center)):
-            plt.fill(fill_area[0], fill_area[1], color="r", alpha=0.5)
+    search_area_left_idx = np.abs(grid_centers - box2d_left).argmin() - 1
+    search_area_right_idx = np.abs(grid_centers - box2d_right).argmin() + 1
+    search_area_bottom_idx = np.abs(grid_centers - box2d_bottom).argmin() - 1
+    search_area_top_idx = np.abs(grid_centers - box2d_top).argmin() + 1
+
+    box2d_center = box2d.mean(axis=0)
+
+    for i in range(search_area_left_idx, search_area_right_idx):
+        for j in range(search_area_bottom_idx, search_area_top_idx):
+            grid_center = np.array([grid_centers[i], grid_centers[j]])
+            # print(i*len(grid_centers) + j)
+            fill_area = np.array([[(grid_center[0] - gsize / 2),
+                                   (grid_center[0] + gsize / 2),
+                                   (grid_center[0] + gsize / 2),
+                                   (grid_center[0] - gsize / 2)],
+                                  [(grid_center[1] + gsize / 2),
+                                   (grid_center[1] + gsize / 2),
+                                   (grid_center[1] - gsize / 2),
+                                   (grid_center[1] - gsize / 2)]])
+            if(points_in_box2d(box2d, grid_center)):
+                plt.fill(fill_area[0], fill_area[1], color="r", alpha=0.1)
+                # object center x
+                out_feature[i, j, 0] = box2d_center[0]
+                # object center y
+                out_feature[i, j, 1] = box2d_center[1]
+                # objectness
+                out_feature[i, j, 2] = 1.
+                # positiveness
+                out_feature[i, j, 3] = 1.
+                # object_hight
+                # out_feature[i, j, 4] = corners[0]
+                # class probability
+                out_feature[i, j, 5] = 1.
+
 plt.show()
