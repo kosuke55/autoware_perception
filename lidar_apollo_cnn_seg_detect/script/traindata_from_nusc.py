@@ -49,19 +49,6 @@ def get_color(category_name: str) -> Tuple[int, int, int]:
     else:
         return 255, 0, 255  # Magenta
 
-def getNearestValue(list, num):
-    """
-    概要: リストからある値に最も近い値を返却する関数
-    @param list: データ配列
-    @param num: 対象値
-    @return 対象値に最も近い値
-    """
-
-    # リスト要素と対象値の差分を計算し最小値のインデックスを取得
-    idx = np.abs(np.asarray(list) - num).argmin()
-    return list[idx]
-
-
 
 def points_in_box2d(box2d: np.ndarray, points: np.ndarray):
     p1 = box2d[0]
