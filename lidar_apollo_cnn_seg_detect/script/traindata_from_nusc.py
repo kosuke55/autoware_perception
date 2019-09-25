@@ -73,6 +73,8 @@ grid_range = 60
 size = 640
 # size = 100
 gsize = 2 * grid_range / size
+out_feature = np.zeros((size, size, 5))
+print(out_feature.shape)
 
 channel = 5
 dataroot = '/home/kosuke/dataset/nuScenes/'
@@ -142,11 +144,11 @@ print(ticks)
 grid_centers = (ticks + gsize / 2)[:len(ticks) - 1]
 print(grid_centers)
 
-
 search_area_left_idx = np.abs(grid_centers - box2d_left).argmin() - 1
 search_area_right_idx = np.abs(grid_centers - box2d_right).argmin() + 1
 search_area_bottom_idx = np.abs(grid_centers - box2d_bottom).argmin() - 1
 search_area_top_idx = np.abs(grid_centers - box2d_top).argmin() + 1
+
 
 for i in range(search_area_left_idx, search_area_right_idx):
     for j in range(search_area_bottom_idx, search_area_top_idx):
