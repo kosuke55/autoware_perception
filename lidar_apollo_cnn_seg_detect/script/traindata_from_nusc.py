@@ -71,7 +71,7 @@ def points_in_box2d(box2d: np.ndarray, points: np.ndarray):
 
 
 grid_range = 60
-size = 100
+size = 640
 
 gsize = 2 * grid_range / size
 # center -> x, y
@@ -132,74 +132,125 @@ for box in boxes:
     box.render(ax, view=np.eye(4), colors=(c, c, c))
 
 # box = boxes[2]
-for box_idx, box in enumerate(boxes):
-    print("box_idx  {}/{}".format(box_idx, len(boxes)))
-    view = np.eye(4)
+# for box_idx, box in enumerate(boxes):
+#     print("box_idx  {}/{}".format(box_idx, len(boxes)))
+#     view = np.eye(4)
 
-    corners3d = view_points(box.corners(), view, normalize=False)
-    height = np.linalg.norm(corners3d.T[0] - corners3d.T[3])
+#     corners3d = view_points(box.corners(), view, normalize=False)
+#     height = np.linalg.norm(corners3d.T[0] - corners3d.T[3])
 
-    # corners 2d
-    corners = corners3d[:2, :]
-    box2d = corners.T[[2, 3, 7, 6]]
-    corners_height = corners3d[2, :]
-    height = corners_height[0] - corners_height[2]
+#     # corners 2d
+#     corners = corners3d[:2, :]
+#     box2d = corners.T[[2, 3, 7, 6]]
+#     corners_height = corners3d[2, :]
+#     height = corners_height[0] - corners_height[2]
 
-    # plt.scatter(box2d[:, 0], box2d[:, 1], marker='^', s=100)
+#     # plt.scatter(box2d[:, 0], box2d[:, 1], marker='^', s=100)
 
-    # find search_area
-    box2d_left = box2d[:, 0].min()
-    box2d_right = box2d[:, 0].max()
-    box2d_top = box2d[:, 1].max()
-    box2d_bottom = box2d[:, 1].min()
+#     # find search_area
+#     box2d_left = box2d[:, 0].min()
+#     box2d_right = box2d[:, 0].max()
+#     box2d_top = box2d[:, 1].max()
+#     box2d_bottom = box2d[:, 1].min()
 
-    grid_centers = (ticks + gsize / 2)[:len(ticks) - 1]
+#     grid_centers = (ticks + gsize / 2)[:len(ticks) - 1]
 
-    search_area_left_idx = np.abs(grid_centers - box2d_left).argmin() - 1
-    search_area_right_idx = np.abs(grid_centers - box2d_right).argmin() + 1
-    search_area_bottom_idx = np.abs(grid_centers - box2d_bottom).argmin() - 1
-    search_area_top_idx = np.abs(grid_centers - box2d_top).argmin() + 1
+#     search_area_left_idx = np.abs(grid_centers - box2d_left).argmin() - 1
+#     search_area_right_idx = np.abs(grid_centers - box2d_right).argmin() + 1
+#     search_area_bottom_idx = np.abs(grid_centers - box2d_bottom).argmin() - 1
+#     search_area_top_idx = np.abs(grid_centers - box2d_top).argmin() + 1
 
-    box2d_center = box2d.mean(axis=0)
+#     box2d_center = box2d.mean(axis=0)
 
-    for i in range(search_area_left_idx, search_area_right_idx):
-        for j in range(search_area_bottom_idx, search_area_top_idx):
-            grid_center = np.array([grid_centers[i], grid_centers[j]])
-            # print(i*len(grid_centers) + j)
-            fill_area = np.array([[(grid_center[0] - gsize / 2),
-                                   (grid_center[0] + gsize / 2),
-                                   (grid_center[0] + gsize / 2),
-                                   (grid_center[0] - gsize / 2)],
-                                  [(grid_center[1] + gsize / 2),
-                                   (grid_center[1] + gsize / 2),
-                                   (grid_center[1] - gsize / 2),
-                                   (grid_center[1] - gsize / 2)]])
-            if(points_in_box2d(box2d, grid_center)):
-                plt.fill(fill_area[0], fill_area[1], color="r", alpha=0.1)
-                # object center x
-                out_feature[0, i, j, 0] = box2d_center[0]
-                # object center y
-                out_feature[0, i, j, 1] = box2d_center[1]
-                # objectness
-                out_feature[0, i, j, 2] = 1.
-                # positiveness
-                out_feature[0, i, j, 3] = 1.
-                # object_hight
-                out_feature[0, i, j, 4] = height
-                # class probability
-                out_feature[0, i, j, 5] = 1.
+#     for i in range(search_area_left_idx, search_area_right_idx):
+#         for j in range(search_area_bottom_idx, search_area_top_idx):
+#             grid_center = np.array([grid_centers[i], grid_centers[j]])
+#             # print(i*len(grid_centers) + j)
+#             fill_area = np.array([[(grid_center[0] - gsize / 2),
+#                                    (grid_center[0] + gsize / 2),
+#                                    (grid_center[0] + gsize / 2),
+#                                    (grid_center[0] - gsize / 2)],
+#                                   [(grid_center[1] + gsize / 2),
+#                                    (grid_center[1] + gsize / 2),
+#                                    (grid_center[1] - gsize / 2),
+#                                    (grid_center[1] - gsize / 2)]])
+#             if(points_in_box2d(box2d, grid_center)):
+#                 plt.fill(fill_area[0], fill_area[1], color="r", alpha=0.1)
+#                 # object center x
+#                 out_feature[0, i, j, 0] = box2d_center[0]
+#                 # object center y
+#                 out_feature[0, i, j, 1] = box2d_center[1]
+#                 # objectness
+#                 out_feature[0, i, j, 2] = 1.
+#                 # positiveness
+#                 out_feature[0, i, j, 3] = 1.
+#                 # object_hight
+#                 out_feature[0, i, j, 4] = height
+#                 # class probability
+#                 out_feature[0, i, j, 5] = 1.
 
-print(out_feature)
-print(out_feature.shape)
-
-
-with h5py.File('nusc_baidu.h5', 'w') as f:
-    # transform data into caffe format
-    out_feature = np.transpose(
-        out_feature, (0, 3, 2, 1))  # NxWxHxC -> NxCxHxW
-    print(out_feature.shape)
-    f.create_dataset('data', dtype=np.float, data=out_feature)
-# plt.show()
+# print(out_feature)
+# print(out_feature.shape)
+# with h5py.File('nusc_baidu.h5', 'w') as f:
+#     # transform data into caffe format
+#     out_feature = np.transpose(
+#         out_feature, (0, 3, 2, 1))  # NxWxHxC -> NxCxHxW
+#     print(out_feature.shape)
+#     f.create_dataset('data', dtype=np.float, data=out_feature)
 
 
 feature_generator = fg.Feature_generator()
+feature_generator.generate(pc.points.T)
+print(pc.points.shape)
+for i in range(10):
+    print(pc.points.T[i])
+feature = feature_generator.feature
+print(feature.shape)
+# feature = feature_generator.feature.T.reshape(
+#     1, 8, feature_generator.height, feature_generator.width)
+print(feature[feature != 0])
+for i in range(8):
+    print("{}-----{}".format(i, np.count_nonzero(feature[:, i])))
+
+# check if input data is correct
+grid_centers = (ticks + gsize / 2)[:len(ticks) - 1]
+
+feature = feature.reshape(size, size, 8)
+nonzero_idx = np.where(feature[:, :, 7] != 0)
+print(nonzero_idx)
+
+grid_center = np.array([grid_centers[nonzero_idx[0]],
+                        grid_centers[nonzero_idx[1]]])
+
+fill_area = np.array([[(grid_center[0] - gsize / 2),
+                       (grid_center[0] + gsize / 2),
+                       (grid_center[0] + gsize / 2),
+                       (grid_center[0] - gsize / 2)],
+                      [(grid_center[1] + gsize / 2),
+                       (grid_center[1] + gsize / 2),
+                       (grid_center[1] - gsize / 2),
+                       (grid_center[1] - gsize / 2)]])
+plt.fill(fill_area[0], fill_area[1], color="b", alpha=0.1)
+
+fill_area = np.array([[(1 - gsize / 2),
+                       (1 + gsize / 2),
+                       (1 + gsize / 2),
+                       (1 - gsize / 2)],
+                      [(0 + gsize / 2),
+                       (0 + gsize / 2),
+                       (0 - gsize / 2),
+                       (0 - gsize / 2)]])
+plt.fill(fill_area[0], fill_area[1], color="r", alpha=1)
+
+fill_area = np.array([[(0 - gsize / 2),
+                       (0 + gsize / 2),
+                       (0 + gsize / 2),
+                       (0 - gsize / 2)],
+                      [(1 + gsize / 2),
+                       (1 + gsize / 2),
+                       (1 - gsize / 2),
+                       (1 - gsize / 2)]])
+plt.fill(fill_area[0], fill_area[1], color="g", alpha=1)
+
+
+plt.show()

@@ -25,6 +25,7 @@ class Feature_generator():
         self.mean_intensity_data = 5
         self.distance_data = 6
         self.nonempty_data = 7
+        # this is mistake. chanel is first.
         self.feature = np.zeros((self.siz, 8))
 
         for row in range(self.height):
@@ -58,7 +59,7 @@ class Feature_generator():
         start = time.time()
         for i in range(len(points)):
             if(points[i, 2] <= self.min_height or
-               points[i, 2] <= self.max_height):
+               points[i, 2] >= self.max_height):
                 self.map_idx[i] = -1
             # project point cloud to 2d map. clac in which grid point is.
             # * the coordinates of x and y are exchanged here
@@ -101,11 +102,19 @@ class Feature_generator():
 if __name__ == "__main__":
     feature_generator = Feature_generator()
     points = feature_generator.load_pc_from_file("../pcd/sample.pcd.bin")
+    print(points.shape)
+    for i in range(10):
+        print(points[i])
     feature_generator.generate(points)
     # this can be loaded np.fromfile("feature.bin").reshape([-1,8])
-    feature_generator.feature.tofile("feature.bin")
-    feature = feature_generator.feature.reshape(
-        1, feature_generator.width, feature_generator.height, 8)
-    with h5py.File('feature.h5', 'w') as f:
-        f.create_dataset('feature', data=feature)
-    print(feature_generator.feature)
+    # feature_generator.feature.tofile("feature.bin")
+    feature = feature_generator.feature
+    for i in range(8):
+        print("{}-----{}".format(i, np.count_nonzero(feature[:, i])))
+    # feature = feature.T.reshape(
+    #     1, 8, feature_generator.height, feature_generator.width)
+    # # feature = feature_generator.feature.reshape(
+    # #     1, feature_generator.width, feature_generator.height, 8)
+    # with h5py.File('feature.h5', 'w') as f:
+    #     f.create_dataset('feature', data=feature)
+    # print(feature_generator.feature)
