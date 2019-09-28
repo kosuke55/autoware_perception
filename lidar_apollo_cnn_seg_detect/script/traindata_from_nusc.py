@@ -70,8 +70,8 @@ def points_in_box2d(box2d: np.ndarray, points: np.ndarray):
 
 
 grid_range = 60
-size = 640
-# size = 100
+# size = 640
+size = 10
 gsize = 2 * grid_range / size
 # center -> x, y
 out_feature = np.zeros((size, size, 6))
@@ -136,6 +136,9 @@ for box_idx, box in enumerate(boxes):
     view = np.eye(4)
 
     corners3d = view_points(box.corners(), view, normalize=False)
+    height = np.linalg.norm(corners3d.T[0] - corners3d.T[3])
+
+    # corners 2d
     corners = corners3d[:2, :]
     box2d = corners.T[[2, 3, 7, 6]]
     corners_height = corners3d[2, :]
@@ -181,8 +184,8 @@ for box_idx, box in enumerate(boxes):
                 # positiveness
                 out_feature[i, j, 3] = 1.
                 # object_hight
-                # out_feature[i, j, 4] = corners[0]
+                out_feature[i, j, 4] = height
                 # class probability
                 out_feature[i, j, 5] = 1.
 
-plt.show()
+# plt.show()
