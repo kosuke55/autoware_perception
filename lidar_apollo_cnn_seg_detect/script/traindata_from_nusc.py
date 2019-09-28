@@ -6,10 +6,11 @@ under development.
 
 import numpy as np
 from nuscenes.nuscenes import NuScenes
-from nuscenes.utils.data_classes import LidarPointCloud, RadarPointCloud, Box
+from nuscenes.utils.data_classes import LidarPointCloud
 import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-from typing import Tuple, List
+from typing import Tuple
+import h5py
+import feature_generator as fg
 
 
 def view_points(points: np.ndarray,
@@ -70,11 +71,11 @@ def points_in_box2d(box2d: np.ndarray, points: np.ndarray):
 
 
 grid_range = 60
-# size = 640
-size = 10
+size = 100
+
 gsize = 2 * grid_range / size
 # center -> x, y
-out_feature = np.zeros((size, size, 6))
+out_feature = np.zeros((1, size, size, 6))
 print(out_feature.shape)
 
 channel = 5
@@ -176,16 +177,29 @@ for box_idx, box in enumerate(boxes):
             if(points_in_box2d(box2d, grid_center)):
                 plt.fill(fill_area[0], fill_area[1], color="r", alpha=0.1)
                 # object center x
-                out_feature[i, j, 0] = box2d_center[0]
+                out_feature[0, i, j, 0] = box2d_center[0]
                 # object center y
-                out_feature[i, j, 1] = box2d_center[1]
+                out_feature[0, i, j, 1] = box2d_center[1]
                 # objectness
-                out_feature[i, j, 2] = 1.
+                out_feature[0, i, j, 2] = 1.
                 # positiveness
-                out_feature[i, j, 3] = 1.
+                out_feature[0, i, j, 3] = 1.
                 # object_hight
-                out_feature[i, j, 4] = height
+                out_feature[0, i, j, 4] = height
                 # class probability
-                out_feature[i, j, 5] = 1.
+                out_feature[0, i, j, 5] = 1.
 
+print(out_feature)
+print(out_feature.shape)
+
+
+with h5py.File('nusc_baidu.h5', 'w') as f:
+    # transform data into caffe format
+    out_feature = np.transpose(
+        out_feature, (0, 3, 2, 1))  # NxWxHxC -> NxCxHxW
+    print(out_feature.shape)
+    f.create_dataset('data', dtype=np.float, data=out_feature)
 # plt.show()
+
+
+feature_generator = fg.Feature_generator()

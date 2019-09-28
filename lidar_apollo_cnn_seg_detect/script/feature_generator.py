@@ -49,8 +49,8 @@ class Feature_generator():
     def load_pc_from_file(self, pc_f):
         return np.fromfile(pc_f, dtype=np.float32, count=-1).reshape([-1, 4])
 
-    def generate(self, pc_f):
-        points = self.load_pc_from_file(pc_f)
+    def generate(self, points):
+        # points = self.load_pc_from_file(pc_f)
         print("points.shape = " + str(points.shape))
         self.map_idx = np.zeros(len(points))
         inv_res_x = 0.5 * self.width / self.range
@@ -100,7 +100,8 @@ class Feature_generator():
 
 if __name__ == "__main__":
     feature_generator = Feature_generator()
-    feature_generator.generate("../pcd/sample.pcd.bin")
+    points = feature_generator.load_pc_from_file("../pcd/sample.pcd.bin")
+    feature_generator.generate(points)
     # this can be loaded np.fromfile("feature.bin").reshape([-1,8])
     feature_generator.feature.tofile("feature.bin")
     feature = feature_generator.feature.reshape(
