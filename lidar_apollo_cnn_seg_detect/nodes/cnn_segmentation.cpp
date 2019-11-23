@@ -30,7 +30,8 @@ bool CNNSegmentation::init()
   if (private_node_handle.getParam("network_definition_file", proto_file))
   {
     ROS_INFO("[%s] network_definition_file: %s", __APP_NAME__, proto_file.c_str());
-  } else
+  }
+  else
   {
     ROS_INFO("[%s] No Network Definition File was received. Finishing execution.", __APP_NAME__);
     return false;
@@ -38,7 +39,8 @@ bool CNNSegmentation::init()
   if (private_node_handle.getParam("pretrained_model_file", weight_file))
   {
     ROS_INFO("[%s] Pretrained Model File: %s", __APP_NAME__, weight_file.c_str());
-  } else
+  }
+  else
   {
     ROS_INFO("[%s] No Pretrained Model File was received. Finishing execution.", __APP_NAME__);
     return false;
@@ -161,17 +163,17 @@ bool CNNSegmentation::segment(const pcl::PointCloud<pcl::PointXYZI>::Ptr &pc_ptr
     instance_pt_blob_->cpu_data() + instance_pt_blob_->offset(0, 1);
   int rows_ = 512;
   int cols_ = 512;
-  for (int row = 0; row < rows_; ++row)
-    {
-      for (int col = 0; col < cols_; ++col)
-           {
-             int grid = row * 512 + col;
-             std::cout << grid << ":c   " << *(category_pt_data_ + grid) << std::endl;
-             std::cout << grid << ":x   " << *(instance_pt_x_data_ + grid) << std::endl;
-             std::cout << grid << ":y   " << *(instance_pt_y_data_ + grid) << std::endl;
+  // for (int row = 0; row < rows_; ++row)
+  //   {
+  //     for (int col = 0; col < cols_; ++col)
+  //          {
+  //            int grid = row * 512 + col;
+  //            std::cout << grid << ":c   " << *(category_pt_data_ + grid) << std::endl;
+  //            std::cout << grid << ":x   " << *(instance_pt_x_data_ + grid) << std::endl;
+  //            std::cout << grid << ":y   " << *(instance_pt_y_data_ + grid) << std::endl;
 
-        }
-    }
+  //       }
+  //   }
   // const float *instance_pt_x_data_ = *instance_pt_blob_.cpu_data();
   // const float *instance_pt_y_data_ =
   //           instance_pt_blob.cpu_data() + instance_pt_blob.offset(0, 1);
@@ -190,6 +192,30 @@ bool CNNSegmentation::segment(const pcl::PointCloud<pcl::PointXYZI>::Ptr &pc_ptr
   int min_pts_num = 3;
   cluster2d_->getObjects(confidence_thresh, height_thresh, min_pts_num,
                          objects, message_header_);
+
+  // visualize confidence
+  const caffe::Blob<float> &confidence_pt_blob = *confidence_pt_blob_;
+  const float *confidence_pt_data = confidence_pt_blob.cpu_data();
+  cv::Mat confidence_image(rows_, cols_, CV_8UC1);
+  for (int row = 0; row < rows_; ++row)
+  {
+    for (int col = 0; col < cols_; ++col)
+    {
+      int grid = row * 512 + col;
+      if (confidence_pt_data[grid] > 0.6)
+      {
+        confidence_image.at<unsigned char>(col, rows_ - row -1) = 255;
+      }
+      else
+      {
+        confidence_image.at<unsigned char>(col, rows_ - row - 1) = 0;
+      }
+    }
+  }
+  confidence_pub_.publish(cv_bridge::CvImage(message_header_,
+                                             sensor_msgs::image_encodings::MONO8,
+                                             confidence_image).toImageMsg());
+
   return true;
 }
 
@@ -223,6 +249,7 @@ void CNNSegmentation::run()
   points_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("/detection/lidar_detector/points_cluster", 1);
   objects_pub_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/detection/lidar_detector/objects", 1);
   d_objects_pub_ = nh_.advertise<autoware_msgs::DynamicObjectWithFeatureArray>("labeled_clusters", 1);
+  confidence_pub_ = nh_.advertise<sensor_msgs::Image>("confidence_image", 1);
 
   ROS_INFO("[%s] Ready. Waiting for data...", __APP_NAME__);
 }

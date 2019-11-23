@@ -32,8 +32,13 @@
 
 #include <std_msgs/Header.h>
 
+
 #include "cluster2d.h"
 #include "feature_generator.h"
+
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/image_encodings.h>
+#include <cv_bridge/cv_bridge.h>
 
 #define __APP_NAME__ "lidar_apollo_cnn_seg_detect"
 
@@ -74,6 +79,7 @@ private:
   ros::Publisher points_pub_;
   ros::Publisher objects_pub_;
   ros::Publisher d_objects_pub_;
+  ros::Publisher confidence_pub_;
 
   // subscriber
   ros::Subscriber points_sub_;

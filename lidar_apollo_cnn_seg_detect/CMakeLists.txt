@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
         sensor_msgs
         geometry_msgs
         autoware_msgs
+        cv_bridge
         )
 
 find_package(CUDA)

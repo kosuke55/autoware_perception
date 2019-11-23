@@ -21,6 +21,7 @@ bool Cluster2D::init(int rows, int cols, float range)
     cols_ = cols;
     grids_ = rows_ * cols_;
     range_ = range;
+    // scale_は1mあたり何マスなのか。inv_resとおなじ。
     scale_ = 0.5 * static_cast<float>(rows_) / range_;
     inv_res_x_ = 0.5 * static_cast<float>(cols_) / range_;
     inv_res_y_ = 0.5 * static_cast<float>(rows_) / range_;
@@ -216,6 +217,27 @@ void Cluster2D::filter(const caffe::Blob<float> &confidence_pt_blob,
         obs->height = height / static_cast<double>(obs->grids.size());
         obs->cloud_ptr.reset(new pcl::PointCloud<pcl::PointXYZI>);
     }
+
+    // float *data = new float[rows_ * cols_];
+    // for (int row = 0; row < rows_; ++row)
+    // {
+    //   for (int col = 0; col < cols_; ++col)
+    //   {
+    //     int grid = row * 512 + col;
+    //     if (confidence_pt_data[grid] > 0.5)
+    //     {
+    //       data[grid] = 255;
+    //     }
+    //     else
+    //     {
+    //       data[grid] = 0;
+    //     }
+    //   }
+    // }
+    // cv::Mat confidence_image(rows_, cols_, CV_64FC(10), data);
+    // confidence_pub_.publish(cv_bridge::CvImage(header_,
+    //                                       sensor_msgs::image_encodings::BGR8,
+    //                                       confidence_image).toImageMsg());
 }
 
 void Cluster2D::classify(const caffe::Blob<float> &classify_pt_blob)
