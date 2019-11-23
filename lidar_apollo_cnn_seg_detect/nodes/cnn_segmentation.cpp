@@ -202,7 +202,7 @@ bool CNNSegmentation::segment(const pcl::PointCloud<pcl::PointXYZI>::Ptr &pc_ptr
     for (int col = 0; col < cols_; ++col)
     {
       int grid = row * 512 + col;
-      if (confidence_pt_data[grid] > 0.6)
+      if (confidence_pt_data[grid] > score_threshold_)
       {
         confidence_image.at<unsigned char>(col, rows_ - row -1) = 255;
       }
