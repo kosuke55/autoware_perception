@@ -56,10 +56,10 @@ bool CNNSegmentation::init()
   private_node_handle.param<double>("score_threshold", score_threshold_, 0.6);
   ROS_INFO("[%s] score_threshold: %.2f", __APP_NAME__, score_threshold_);
 
-  private_node_handle.param<int>("width", width_, 512);
+  private_node_handle.param<int>("width", width_, 640);
   ROS_INFO("[%s] width: %d", __APP_NAME__, width_);
 
-  private_node_handle.param<int>("height", height_, 512);
+  private_node_handle.param<int>("height", height_, 640);
   ROS_INFO("[%s] height: %d", __APP_NAME__, height_);
 
   private_node_handle.param<bool>("use_gpu", use_gpu_, false);
@@ -161,13 +161,13 @@ bool CNNSegmentation::segment(const pcl::PointCloud<pcl::PointXYZI>::Ptr &pc_ptr
   const float *instance_pt_x_data_ = instance_pt_blob_->cpu_data();
   const float *instance_pt_y_data_ =
     instance_pt_blob_->cpu_data() + instance_pt_blob_->offset(0, 1);
-  int rows_ = 512;
-  int cols_ = 512;
+  int rows_ = 640;
+  int cols_ = 640;
   // for (int row = 0; row < rows_; ++row)
   //   {
   //     for (int col = 0; col < cols_; ++col)
   //          {
-  //            int grid = row * 512 + col;
+  //            int grid = row * 640 + col;
   //            std::cout << grid << ":c   " << *(category_pt_data_ + grid) << std::endl;
   //            std::cout << grid << ":x   " << *(instance_pt_x_data_ + grid) << std::endl;
   //            std::cout << grid << ":y   " << *(instance_pt_y_data_ + grid) << std::endl;
@@ -201,7 +201,7 @@ bool CNNSegmentation::segment(const pcl::PointCloud<pcl::PointXYZI>::Ptr &pc_ptr
   {
     for (int col = 0; col < cols_; ++col)
     {
-      int grid = row * 512 + col;
+      int grid = row * 640 + col;
       if (confidence_pt_data[grid] > score_threshold_)
       {
         confidence_image.at<unsigned char>(col, rows_ - row -1) = 255;

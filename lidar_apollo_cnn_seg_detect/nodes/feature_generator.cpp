@@ -23,8 +23,11 @@ bool FeatureGenerator::init(caffe::Blob<float>* out_blob)
 
   // raw feature parameters
   range_ = 60;
-  width_ = 512;
-  height_ = 512;
+  // width_ = 512;
+  // height_ = 512;
+  width_ = 640;
+  height_ = 640;
+  std::cout << "width" << width_ << std::endl;
   min_height_ = -5.0;
   max_height_ = 5.0;
   CHECK_EQ(width_, height_)
